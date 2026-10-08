@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Ç©ÇÌÇ¢Ç¢ê≈çûåvéZ</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff9fd3">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fff5fb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(255, 150, 200, 0.3);
+      padding: 24px;
+      width: 360px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: #ff6fa8;
+    }
+    .emoji {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid #ffd0e6;
+      font-size: 16px;
+      margin-top: 8px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: none;
+      background: #ff9fd3;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .lang-btn {
+      margin-bottom: 10px;
+      background: #ffe0f0;
+      color: #ff6fa8;
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: none;
+    }
+    .result {
+      margin-top: 12px;
+      text-align: left;
+      font-size: 15px;
+      color: #444;
+    }
+    .label {
+      color: #ff6fa8;
+      font-weight: 600;
+    }
+    .section-title {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #ff6fa8;
+      font-weight: 600;
+      text-align: left;
+    }
+    .history {
+      margin-top: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 13px;
+      text-align: left;
+      border-top: 1px dashed #ffd0e6;
+      padding-top: 6px;
+    }
+    .history-item {
+      margin-bottom: 4px;
+    }
+    .small-btn {
+      background: #ffd0e6;
+      color: #ff4f92;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <button class="lang-btn" onclick="toggleLang()">íÜï∂ / ì˙ñ{åÍ</button>
+
+    <div class="emoji">????</div>
+    <h1 id="title">Ç©ÇÌÇ¢Ç¢ê≈çûåvéZ</h1>
+
+    <!-- ???éZ -->
+    <div id="inputLabel">ñ¢ê≈âøäiÅiâ~ÅjÇì¸óÕÇµÇƒÇÀÅF</div>
+    <input type="number" id="price" placeholder="ó·ÅF1000">
+    <button onclick="calcSingle()" id="calcBtn">åvéZÇ∑ÇÈ</button>
+    <button class="small-btn" onclick="copyCurrent()">?êßìñëO?â </button>
+
+    <div class="result" id="output"></div>
+
+    <!-- î·ó ?éZ -->
+    <div class="section-title" id="batchTitle">î·ó ?éZÅi?çsàÍò¢ã‡?ÅjÅF</div>
+    <textarea id="batchInput" placeholder="ó·ÅF\n1000\n2500\n3980"></textarea>
+    <button onclick="calcBatch()" id="batchBtn">î·ó ?éZ</button>
+    <button class="small-btn" onclick="copyBatch()">?êßî·ó ?â </button>
+    <div class="result" id="batchOutput"></div>
+
+    <!-- ?éj?? -->
+    <div class="section-title" id="historyTitle">?éj??ÅF</div>
+    <div class="history" id="historyList"></div>
+  </div>
+
+  <script>
+    let lang = "ja";
+    let history = [];
+
+    const text = {
+      ja: {
+        title: "Ç©ÇÌÇ¢Ç¢ê≈çûåvéZ",
+        inputLabel: "ñ¢ê≈âøäiÅiâ~ÅjÇì¸óÕÇµÇƒÇÀÅF",
+        calcBtn: "åvéZÇ∑ÇÈ",
+        err: "êîéöÇì¸óÕÇµÇƒÇÀ ??",
+        t1: "ê≈çûâøäi",
+        t2: "0.9ê‹Åiñ¢ê≈Åj",
+        t3: "0.9ê‹ÇÃê≈çû",
+        batchTitle: "Ç‹Ç∆ÇﬂÇƒåvéZÅi1çs1ã‡äzÅjÅF",
+        batchBtn: "Ç‹Ç∆ÇﬂÇƒåvéZ",
+        historyTitle: "óöóÅF",
+        copyCurrent: "åªç›ÇÃåãâ ÇÉRÉsÅ[ÇµÇ‹ÇµÇΩ",
+        copyBatch: "Ç‹Ç∆Çﬂåãâ ÇÉRÉsÅ[ÇµÇ‹ÇµÇΩ"
+      },
+      zh: {
+        title: "â¬??ê≈ç@?éZäÌ",
+        inputLabel: "??ì¸ñ¢ê≈ì˙å≥ã‡?ÅF",
+        calcBtn: "?én?éZ",
+        err: "??ì¸êîéööG ??",
+        t1: "ê≈ç@ò¡",
+        t2: "0.9ê‹Åiñ¢ê≈Åj",
+        t3: "0.9ê‹ç@ìIê≈ç@ò¡",
+        batchTitle: "î·ó ?éZÅi?çsàÍò¢ã‡?ÅjÅF",
+        batchBtn: "î·ó ?éZ",
+        historyTitle: "?éj??ÅF",
+        copyCurrent: "õﬂ?êßìñëO?â ",
+        copyBatch: "õﬂ?êßî·ó ?â "
+      }
+    };
+
+    function applyLang() {
+      document.getElementById("title").innerText = text[lang].title;
+      document.getElementById("inputLabel").innerText = text[lang].inputLabel;
+      document.getElementById("calcBtn").innerText = text[lang].calcBtn;
+      document.getElementById("batchTitle").innerText = text[lang].batchTitle;
+      document.getElementById("batchBtn").innerText = text[lang].batchBtn;
+      document.getElementById("historyTitle").innerText = text[lang].historyTitle;
+    }
+
+    function toggleLang() {
+      lang = lang === "ja" ? "zh" : "ja";
+      applyLang();
+      document.getElementById("output").innerHTML = "";
+      document.getElementById("batchOutput").innerHTML = "";
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+
+    function formatResult(price, taxIncluded, discounted, discountedTaxIncluded) {
+      return `${price} â~ Å® ` +
+        `${text[lang].t1}: ${taxIncluded} â~, ` +
+        `${text[lang].t2}: ${discounted} â~, ` +
+        `${text[lang].t3}: ${discountedTaxIncluded} â~`;
+    }
+
+    function addHistory(entry) {
+      history.unshift(entry);
+      if (history.length > 50) history.pop();
+      const list = document.getElementById("historyList");
+      list.innerHTML = history.map(h => `<div class="history-item">${h}</div>`).join("");
+    }
+
+    function calcSingle() {
+      const price = parseFloat(document.getElementById('price').value);
+      const out = document.getElementById('output');
+      if (isNaN(price)) {
+        out.innerText = text[lang].err;
+        return;
+      }
+
+      const taxIncluded = Math.round(price * 1.1);
+      const discounted = Math.round(price * 0.9);
+      const discountedTaxIncluded = Math.round(discounted * 1.1);
+
+      out.innerHTML =
+        `<span class="label">${text[lang].t1}ÅF</span>${taxIncluded} â~<br>` +
+        `<span class="label">${text[lang].t2}ÅF</span>${discounted} â~<br>` +
+        `<span class="label">${text[lang].t3}ÅF</span>${discountedTaxIncluded} â~`;
+
+      addHistory(formatResult(price, taxIncluded, discounted, discountedTaxIncluded));
+    }
+
+    function calcBatch() {
+      const textInput = document.getElementById('batchInput').value;
+      const lines = textInput.split('\n').map(l => l.trim()).filter(l => l !== "");
+      const out = document.getElementById('batchOutput');
+
+      if (lines.length === 0) {
+        out.innerText = text[lang].err;
+        return;
+      }
+
+      let results = [];
+      for (const line of lines) {
+        const price = parseFloat(line);
+        if (isNaN(price)) continue;
+        const taxIncluded = Math.round(price * 1.1);
+        const discounted = Math.round(price * 0.9);
+        const discountedTaxIncluded = Math.round(discounted * 1.1);
+        const row = formatResult(price, taxIncluded, discounted, discountedTaxIncluded);
+        results.push(row);
+        addHistory(row);
+      }
+
+      out.innerHTML = results.join("<br>");
+    }
+
+    function copyCurrent() {
+      const out = document.getElementById('output');
+      const textToCopy = out.innerText;
+      if (!textToCopy) return;
+      navigator.clipboard?.writeText(textToCopy);
+      alert(text[lang].copyCurrent);
+    }
+
+    function copyBatch() {
+      const out = document.getElementById('batchOutput');
+      const textToCopy = out.innerText;
+      if (!textToCopy) return;
+      navigator.clipboard?.writeText(textToCopy);
+      alert(text[lang].copyBatch);
+    }
+
+    applyLang();
+  </script>
+</body>
+</html>
